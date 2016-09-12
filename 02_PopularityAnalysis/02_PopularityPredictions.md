@@ -449,11 +449,5 @@ mean(abs(predict(mFC, seldatatest)-log(seldatatest$f2)))
 ```
 ## [1] 1.239349
 ```
- 
-Null train:  1.372127 test: 1.370178
-mF train: 1.24229 test: 1.24231
-mI train: 1.245963 test: 1.246136
-mB train: 1.220341.22034  test: 1.220285
-mC train: 1.368907 test: 1.3671
-mFC train: 1.239323  test: 1.239349
+
 
