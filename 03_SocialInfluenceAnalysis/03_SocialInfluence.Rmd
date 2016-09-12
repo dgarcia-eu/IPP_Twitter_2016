@@ -23,22 +23,22 @@ d <- read.table("SIdata.dat", header=T, sep="\t")
 f <- d$avgRT > 0
 d <- data.frame(meanscore=d$meanscore[f], score=d$score[f], avgRT=d$avgRT[f], followers=d$followers[f], incore=d$incore[f])
 
-m1 <- bayesglm(log(d$avgRT) ~ log(d$incore+1) * log(d$followers+1)) 
-m2 <- bayesglm(log(d$score) ~ log(d$incore+1) * log(d$followers+1)) 
-m3 <- bayesglm(log(d$meanscore) ~ log(d$incore+1) * log(d$followers+1)) 
+mRT <- bayesglm(log(avgRT) ~ log(incore+1) * log(followers+1), data=d) 
+mSC <- bayesglm(log(score) ~ log(incore+1) * log(followers+1), data=d) 
+mMN <- bayesglm(log(meanscore) ~ log(incore+1) * log(followers+1), data=d) 
 
-screenreg(list(m1,m2,m3), digits=4)
+screenreg(list(mRT,mSC,mMN), digits=4)
 ```
 
 ```{r, echo=TRUE, cache=TRUE, eval=TRUE, message=FALSE}
 library(lmtest)
 
-m1 <- bayesglm(log(d$avgRT) ~ log(d$followers+1))                                       
-m2 <- bayesglm(log(d$avgRT) ~ log(d$incore+1))     
+m1 <- bayesglm(log(avgRT) ~ log(followers+1), data=d)                                       
+m2 <- bayesglm(log(avgRT) ~ log(incore+1), data=d)     
 lrtest(m1,m2)
 
-m1 <- bayesglm(log(d$meanscore) ~ log(d$followers+1))                                       
-m2 <- bayesglm(log(d$meanscore) ~ log(d$incore+1))     
+m1 <- bayesglm(log(meanscore) ~ log(followers+1), data=d)                                       
+m2 <- bayesglm(log(meanscore) ~ log(incore+1), data=d)     
 lrtest(m1,m2)
 ```
 
@@ -52,95 +52,31 @@ hist(d$meanscore, main="", xlab="Mean influenced klout score")
 ```
 
 
-```{r, echo=FALSE, cache=TRUE, fig.width=6, fig.height=4.5, eval=FALSE}
-par(mar=c(4,4,0,0))
-par(mfrow=c(2,3))
-
-
-mRT <- bayesglm(log(d$avgRT) ~ log(d$incore+1) * log(d$followers+1)) 
-mMN <- bayesglm(log(d$meanscore) ~ log(d$incore+1) * log(d$followers+1)) 
-mSC <- bayesglm(log(d$score) ~ log(d$incore+1) * log(d$followers+1)) 
-
-mRTsims <- coef(sim(mRT, n=20000))
-incPost <- mRTsims[10001:20000,2]
-follPost <- mRTsims[10001:20000,3]
-interPost <- mRTsims[10001:20000,4]
-
-hinc <- hist(incPost, plot=FALSE)
-hfoll <- hist(follPost, plot=FALSE)
-hinter <- hist(interPost, plot=FALSE)
-plot(hinc$mids, hinc$counts, type="l", xlim=range(c(hinc$mids, hfoll$mids,hinter$mids)), ylim=range(c(hinc$counts, hfoll$counts,hinter$counts)), xlab="coefficient estimate", ylab="posterior frequency")
-lines(hfoll$mids, hfoll$counts, col="red")
-lines(hinter$mids, hinter$counts, col="blue")
-
-
-mMNsims <- coef(sim(mMN, n=20000))
-incPost <- mMNsims[10001:20000,2]
-follPost <- mMNsims[10001:20000,3]
-interPost <- mMNsims[10001:20000,4]
-
-hinc <- hist(incPost, plot=FALSE)
-hfoll <- hist(follPost, plot=FALSE)
-hinter <- hist(interPost, plot=FALSE)
-plot(hinc$mids, hinc$counts, type="l", xlim=range(c(hinc$mids, hfoll$mids,hinter$mids)), ylim=range(c(hinc$counts, hfoll$counts,hinter$counts)), xlab="coefficient estimate", ylab="posterior frequency")
-lines(hfoll$mids, hfoll$counts, col="red")
-lines(hinter$mids, hinter$counts, col="blue")
-
-mSCsims <- coef(sim(mSC, n=20000))
-incPost <- mSCsims[10001:20000,2]
-follPost <- mSCsims[10001:20000,3]
-interPost <- mSCsims[10001:20000,4]
-
-hinc <- hist(incPost, plot=FALSE)
-hfoll <- hist(follPost, plot=FALSE)
-hinter <- hist(interPost, plot=FALSE)
-plot(hinc$mids, hinc$counts, type="l", xlim=range(c(hinc$mids, hfoll$mids,hinter$mids)), ylim=range(c(hinc$counts, hfoll$counts,hinter$counts)), xlab="coefficient estimate", ylab="posterior frequency")
-lines(hfoll$mids, hfoll$counts, col="red")
-lines(hinter$mids, hinter$counts, col="blue")
-
-hist(residuals(mRT), main="")
-shapiro.test(sample(residuals(mRT),5000))
-hist(residuals(mMN), main="")
-shapiro.test(sample(residuals(mMN),5000))
-hist(residuals(mSC), main="")
-shapiro.test(sample(residuals(mSC),5000))
-
-```
-
-
-```{r, echo=FALSE, cache=TRUE, eval=FALSE, fig.width=8, fig.height=3}
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=8, fig.height=3}
 par(mar=c(4,5,1.5,0.5))
 par(mfrow=c(1,3))
 
 hist(residuals(mRT), main="", xlab="Residual RT Model", cex.axis=2,cex.lab=2)
 hist(residuals(mSC), main="", xlab="Residual KS Model", cex.axis=2,cex.lab=2)
 hist(residuals(mMN), main="", xlab="Residual IK Model", cex.axis=2,cex.lab=2)
-
 ```
 
 
-
-
-
-
-```{r, echo=FALSE, cache=TRUE, eval=FALSE, fig.width=6, fig.height=4}
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=6, fig.height=4, message=FALSE}
 par(mar=c(4,5,1.5,0.5))
-
-mRT <- bayesglm(log(avgRT) ~ log(incore+1) * log(followers+1), data=d) 
 
 incorevals <- c(40,50,78,100,200)
 follvals <- exp(seq(0, log(max(d$followers)), by=0.01))
 
-RTpred <- predict(mRT, data.frame(followers=follvals, incore=rep(incorevals[1], length(follvals))), se.fit=TRUE)
-plot(follvals, exp(RTpred$fit), type="l", lwd=2, xlab="Popularity in 2009", ylab="Social impact (mean retweets)", xaxt="n", yaxt="n", cex.lab=1.3)
-RTpred <- predict(mRT, data.frame(followers=follvals, incore=rep(incorevals[2], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(RTpred$fit), col="red", lwd=2)
-RTpred <- predict(mRT, data.frame(followers=follvals, incore=rep(incorevals[3], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(RTpred$fit), col="blue", lwd=2)
-RTpred <- predict(mRT, data.frame(followers=follvals, incore=rep(incorevals[4], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(RTpred$fit), col="darkorange", lwd=2)
-RTpred <- predict(mRT, data.frame(followers=follvals, incore=rep(incorevals[5], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(RTpred$fit), col="purple", lwd=2)
+Pdata <- data.frame(followers=rep(follvals, length(incorevals)), incore=rep(incorevals, each=length(follvals)))
+RTpred <- predict(mRT, newdata=Pdata)
+Pdata$fit <- exp(RTpred)
+
+plot(follvals, Pdata$fit[Pdata$incore==incorevals[1]], type="l", lwd=2, xlab="Popularity in 2009", ylab="Social impact (mean retweets)", xaxt="n", yaxt="n", cex.lab=1.3)
+lines(follvals, Pdata$fit[Pdata$incore==incorevals[2]], col="red", lwd=2)
+lines(follvals, Pdata$fit[Pdata$incore==incorevals[3]], col="blue", lwd=2)
+lines(follvals, Pdata$fit[Pdata$incore==incorevals[4]], col="darkorange", lwd=2)
+lines(follvals, Pdata$fit[Pdata$incore==incorevals[5]], col="purple", lwd=2)
 
 library(sfsmisc)
 eaxis(1,cex.axis=1.25)
@@ -148,62 +84,9 @@ eaxis(2,cex.axis=1.25)
 legend("topleft", c("I=40", "I=50", "I=78", "I=100", "I=200"), col=c("black","red","blue","darkorange","purple"), lwd=rep(2,5), box.lwd=-1)
 ```
 
-```{r, echo=FALSE, cache=TRUE, eval=FALSE, fig.width=8, fig.height=4}
-par(mar=c(4,5,1.5,0.5))
-par(mfrow=c(1,2))
-mMN <- bayesglm(log(meanscore) ~ log(incore+1) * log(followers+1), data=d) 
-mSC <- bayesglm(log(score) ~ log(incore+1) * log(followers+1), data=d) 
-
-incorevals <- c(40,50,78,100,200)
-follvals <- exp(seq(0, log(max(d$followers)), by=0.01))
-
-SCpred <- predict(mSC, data.frame(followers=follvals, incore=rep(incorevals[1], length(follvals))), se.fit=TRUE)
-plot(follvals, exp(SCpred$fit), type="l", lwd=2, xlab="Popularity in 2009", ylab="Klout Score", xaxt="n", yaxt="n")
-SCpred <- predict(mSC, data.frame(followers=follvals, incore=rep(incorevals[2], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(SCpred$fit), col="red", lwd=2)
-SCpred <- predict(mSC, data.frame(followers=follvals, incore=rep(incorevals[3], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(SCpred$fit), col="blue", lwd=2)
-SCpred <- predict(mSC, data.frame(followers=follvals, incore=rep(incorevals[4], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(SCpred$fit), col="darkorange", lwd=2)
-SCpred <- predict(mSC, data.frame(followers=follvals, incore=rep(incorevals[5], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(SCpred$fit), col="purple", lwd=2)
-
-library(sfsmisc)
-eaxis(1,cex.axis=1.25)
-eaxis(2,cex.axis=1.25)
-legend("bottomright", c("I=40", "I=50", "I=78", "I=100", "I=200"), col=c("black","red","blue","darkorange","purple"), lwd=rep(2,5), box.lwd=-1)
-
-
-incorevals <- c(40,50,78,100,200)
-follvals <- exp(seq(0, log(max(d$followers)), by=0.01))
-
-MNpred <- predict(mMN, data.frame(followers=follvals, incore=rep(incorevals[1], length(follvals))), se.fit=TRUE)
-plot(follvals, exp(MNpred$fit), type="l", lwd=2, xlab="Popularity in 2009", ylab="Mean Influenced Klout Score", xaxt="n", yaxt="n")
-MNpred <- predict(mMN, data.frame(followers=follvals, incore=rep(incorevals[2], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(MNpred$fit), col="red", lwd=2)
-MNpred <- predict(mMN, data.frame(followers=follvals, incore=rep(incorevals[3], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(MNpred$fit), col="blue", lwd=2)
-MNpred <- predict(mMN, data.frame(followers=follvals, incore=rep(incorevals[4], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(MNpred$fit), col="darkorange", lwd=2)
-MNpred <- predict(mMN, data.frame(followers=follvals, incore=rep(incorevals[5], length(follvals))), se.fit=TRUE)
-lines(follvals, exp(MNpred$fit), col="purple", lwd=2)
-
-library(sfsmisc)
-eaxis(1,cex.axis=1.25)
-eaxis(2,cex.axis=1.25)
-legend("topright", c("I=40", "I=50", "I=78", "I=100", "I=200"), col=c("black","red","blue","darkorange","purple"), lwd=rep(2,5), box.lwd=-1)
-
-```
-
-
-```{r, echo=FALSE, cache=TRUE, eval=FALSE, fig.width=4, fig.height=4}
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=4, fig.height=4, message=FALSE}
 par(mar=c(4,5,1.5,0))
 library(lattice)
-
-mRT <- bayesglm(log(avgRT) ~ log(incore+1) * log(followers+1), data=d) 
-mMN <- bayesglm(log(meanscore) ~ log(incore+1) * log(followers+1), data=d) 
-mSC <- bayesglm(log(score) ~ log(incore+1) * log(followers+1), data=d) 
-
 
 incorevals <- 10^seq(0, log10(max(d$incore)), by=0.35)
 follvals <- 10^seq(0, log10(max(d$followers)), by=0.35)
@@ -220,7 +103,7 @@ cscale <- rev(terrain.colors(24*100))
 wireframe(RT~I09*F09, newdata,drape = TRUE, colorkey = TRUE,           col.regions=cscale,cex.axis=1, cex.lab=1, scales=list(arrows=FALSE), par.box=list(lty=2))
 ```
 
-```{r, echo=FALSE, cache=TRUE, eval=FALSE, fig.width=4, fig.height=4}
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=4, fig.height=4, message=FALSE, warning=FALSE}
 par(mar=c(4,5,1.5,0))
 
 cscale <- rev(topo.colors(24*100))
@@ -228,7 +111,7 @@ clims <-round(range(newdata$mSCpred))*100
 wireframe(KS~I09*F09, newdata,drape = TRUE, colorkey = TRUE, col.regions=cscale,cex.axis=1, cex.lab=1, scales=list(arrows=FALSE), par.box=list(lty=2))
 ```
 
-```{r, echo=FALSE, cache=TRUE, eval=FALSE, fig.width=4, fig.height=4}
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=4, fig.height=4, warning=FALSE}
 par(mar=c(4,5,1.5,0))
 
 cscale <- rev(heat.colors(24*100))
