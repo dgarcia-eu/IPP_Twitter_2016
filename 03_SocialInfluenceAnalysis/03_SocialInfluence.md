@@ -90,6 +90,15 @@ lrtest(m1,m2)
 
 
 
+```r
+par(mar=c(4,4,0,0))
+par(mfrow=c(1,3))
+hist(log(d$avgRT), main="", xlab="log mean RT")
+hist(d$score, main="", xlab="Klout score")
+hist(d$meanscore, main="", xlab="Mean influenced klout score")
+```
+
+![](03_SocialInfluence_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
 
 

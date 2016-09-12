@@ -43,7 +43,7 @@ lrtest(m1,m2)
 ```
 
 
-```{r, echo=FALSE, cache=TRUE, eval=FALSE, fig.width=6, fig.height=2.5, message=FALSE}
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=6, fig.height=2.5, message=FALSE}
 par(mar=c(4,4,0,0))
 par(mfrow=c(1,3))
 hist(log(d$avgRT), main="", xlab="log mean RT")
