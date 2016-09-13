@@ -72,7 +72,7 @@ Pdata <- data.frame(followers=rep(follvals, length(incorevals)), incore=rep(inco
 RTpred <- predict(mRT, newdata=Pdata)
 Pdata$fit <- exp(RTpred)
 
-plot(follvals, Pdata$fit[Pdata$incore==incorevals[1]], type="l", lwd=2, xlab="Popularity in 2009", ylab="Social impact (mean retweets)", xaxt="n", yaxt="n", cex.lab=1.3)
+plot(follvals, Pdata$fit[Pdata$incore==incorevals[1]], type="l", lwd=2, xlab="Popularity in 2009", ylab="Social influence (mean retweets)", xaxt="n", yaxt="n", cex.lab=1.25)
 lines(follvals, Pdata$fit[Pdata$incore==incorevals[2]], col="red", lwd=2)
 lines(follvals, Pdata$fit[Pdata$incore==incorevals[3]], col="blue", lwd=2)
 lines(follvals, Pdata$fit[Pdata$incore==incorevals[4]], col="darkorange", lwd=2)
