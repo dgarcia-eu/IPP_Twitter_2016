@@ -4,14 +4,18 @@ David Garcia
   
 
 ```r
-download.file("https://www.sg.ethz.ch/media/medialibrary/2016/09/01_IPP_Inactivity.zip", destfile="01_IPP_Inactivity.zip")
+download.file("https://www.sg.ethz.ch/media/medialibrary/2017/05/01_IPP_Inactivity.zip", destfile="01_IPP_Inactivity.zip")
 unzip("01_IPP_Inactivity.zip", exdir = "./") 
 file.remove("01_IPP_Inactivity.zip")
+```
 
+
+```r
 data <- read.table("InactiveDataTrain.dat", header=T, sep="\t", 
-                    colClasses=c(rep("integer", 1), "character", rep("integer", 2)))
+                    colClasses=c(rep("integer", 4), "character", rep("integer", 3)))
 
 data$included <- data$lastts > 1248998400
+data$active <- data$lastts > 1459468800
 data$inactive <- data$lastts < 1459468800 #April 1st, 2016 (<3 months active) 
 ```
 
@@ -93,15 +97,7 @@ lines(inactIncoreDF$i[f], inactIncoreDF$pinmn[f], col="red")
 
 load("followersP-2.RData")
 f <- inactIncoreDF$i>0 & !is.na(inactIncoreDF$pinmn)
-lines(inactIncoreDF$i[f], inactIncoreDF$pinmn[f], log="x", type="l", ylim=ylim, xlim=xlim, col="blue", cex.axis=1.5, cex.lab=1.5)
-```
-
-```
-## Warning in plot.xy(xy.coords(x, y), type = type, ...): "log" is not a
-## graphical parameter
-```
-
-```r
+lines(inactIncoreDF$i[f], inactIncoreDF$pinmn[f], type="l", ylim=ylim, xlim=xlim, col="blue", cex.axis=1.5, cex.lab=1.5)
 polygon(c(inactIncoreDF$i[f],rev(inactIncoreDF$i[f])), c(inactIncoreDF$pinlow[f], rev(inactIncoreDF$pinhigh[f])), col=rgb(0,0,1,0.25), border="blue")
 lines(inactIncoreDF$i[f], inactIncoreDF$pinmn[f], col="blue")
 legend("bottomleft", c("Reputation", "Popularity"), col=c("red", "blue"), lwd=c(2,2), box.lwd=-1, cex=1.25)
@@ -114,15 +110,24 @@ eaxis(2,cex.axis=1.5)
 ![](01_ActivityPredictions_files/figure-html/barplots-1.png)<!-- -->
 
 
-```r
-par(mar=c(4,5,0.5,0.75))
+```
+## [1] "IN that have no followers: 0.951713504014149"
+```
 
-inCont <- data$included & data$group=="I"
-outCont <- data$included & data$group=="O"
-tendrils <- data$included & data$group=="T"
-scc <- data$included & data$group=="S"
+```
+## [1] "OUT that do not follow: 0.910167816937467"
+```
 
-prop.test(x=c(sum(data$inactive[inCont]), sum(data$inactive[scc])), n=c(sum(inCont), sum(scc)))
+```
+## [1] "REST that have no followers: 0.527103252390287"
+```
+
+```
+## [1] "REST that do not follow: 0.153858463015562"
+```
+
+```
+## [1] "IN vs SCC"
 ```
 
 ```
@@ -140,8 +145,23 @@ prop.test(x=c(sum(data$inactive[inCont]), sum(data$inactive[scc])), n=c(sum(inCo
 ## 0.6773958 0.6316258
 ```
 
-```r
-prop.test(x=c(sum(data$inactive[outCont]), sum(data$inactive[scc])), n=c(sum(outCont), sum(scc)))
+```
+## 
+## 	2-sample test for equality of proportions with continuity
+## 	correction
+## 
+## data:  c(sum(data$inactive[inCont & ffoll]), sum(data$inactive[scc])) out of c(sum(inCont & ffoll), sum(scc))
+## X-squared = 267.34, df = 1, p-value < 2.2e-16
+## alternative hypothesis: two.sided
+## 95 percent confidence interval:
+##  0.04760144 0.06006816
+## sample estimates:
+##    prop 1    prop 2 
+## 0.6854606 0.6316258
+```
+
+```
+## [1] "OUT vs SCC"
 ```
 
 ```
@@ -159,8 +179,23 @@ prop.test(x=c(sum(data$inactive[outCont]), sum(data$inactive[scc])), n=c(sum(out
 ## 0.7144559 0.6316258
 ```
 
-```r
-prop.test(x=c(sum(data$inactive[tendrils]), sum(data$inactive[scc])), n=c(sum(tendrils), sum(scc)))
+```
+## 
+## 	2-sample test for equality of proportions with continuity
+## 	correction
+## 
+## data:  c(sum(data$inactive[outCont & ffrie]), sum(data$inactive[scc])) out of c(sum(outCont & ffrie), sum(scc))
+## X-squared = 5468.9, df = 1, p-value < 2.2e-16
+## alternative hypothesis: two.sided
+## 95 percent confidence interval:
+##  0.08098696 0.08512032
+## sample estimates:
+##    prop 1    prop 2 
+## 0.7146795 0.6316258
+```
+
+```
+## [1] "REST vs SCC"
 ```
 
 ```
@@ -178,35 +213,71 @@ prop.test(x=c(sum(data$inactive[tendrils]), sum(data$inactive[scc])), n=c(sum(te
 ## 0.7063048 0.6316258
 ```
 
-```r
-bootstrapRatio <- function(x, R=100, L=length(x))
-{
-  ps <- NULL
-  for (i in seq(1,R))
-  {
-    rx <- sample(x, size=L, replace=TRUE)
-    ps <- c(ps, sum(rx)/L)
-  }
-  return(sort(ps))
-}
+```
+## 
+## 	2-sample test for equality of proportions with continuity
+## 	correction
+## 
+## data:  c(sum(data$inactive[tendrils & ffoll]), sum(data$inactive[scc])) out of c(sum(tendrils & ffoll), sum(scc))
+## X-squared = 532.93, df = 1, p-value < 2.2e-16
+## alternative hypothesis: two.sided
+## 95 percent confidence interval:
+##  0.06665729 0.07834755
+## sample estimates:
+##    prop 1    prop 2 
+## 0.7041282 0.6316258
+```
 
-nrep<-1000
-inPs <- bootstrapRatio(data$inactive[inCont], R=nrep)
-outPs <- bootstrapRatio(data$inactive[outCont], R=nrep)
-tenPs <- bootstrapRatio(data$inactive[tendrils], R=nrep)
-sccPs <- bootstrapRatio(data$inactive[scc], R=nrep)
+```
+## 
+## 	2-sample test for equality of proportions with continuity
+## 	correction
+## 
+## data:  c(sum(data$inactive[tendrils & ffrie]), sum(data$inactive[scc])) out of c(sum(tendrils & ffrie), sum(scc))
+## X-squared = 926.64, df = 1, p-value < 2.2e-16
+## alternative hypothesis: two.sided
+## 95 percent confidence interval:
+##  0.06713538 0.07588217
+## sample estimates:
+##    prop 1    prop 2 
+## 0.7031346 0.6316258
+```
 
-mns <- c(mean(sccPs), mean(outPs), mean(inPs), mean(tenPs))
-los <- c(sccPs[round(nrep*0.025)], mean(outPs[round(nrep*0.025)]), mean(inPs[round(nrep*0.025)]), mean(tenPs[round(nrep*0.025)]))
-his <- c(mean(sccPs[round(nrep*0.975)]), mean(outPs[round(nrep*0.975)]), mean(inPs[round(nrep*0.975)]), mean(tenPs[round(nrep*0.975)]))
+```
+## Loading required package: lattice
+```
 
-library(Hmisc)
-errbar(seq(1,4), mns, los, his, lwd=2, pch=19, cex=1, xlab="SCC Group", ylab="Ratio of Inactive Users", axes=F, ylim=c(0.62,0.72), cex.lab=1.5)
-eaxis(1, at=c(1,2,3,4), labels=c("SCC", "Out", "In", "Rest"), cex.axis=1.5)
-eaxis(2, cex.axis=1.15)
+```
+## Loading required package: survival
+```
+
+```
+## Loading required package: Formula
+```
+
+```
+## Loading required package: ggplot2
+```
+
+```
+## 
+## Attaching package: 'Hmisc'
+```
+
+```
+## The following object is masked from 'package:sfsmisc':
+## 
+##     errbar
+```
+
+```
+## The following objects are masked from 'package:base':
+## 
+##     format.pval, round.POSIXt, trunc.POSIXt, units
 ```
 
 ![](01_ActivityPredictions_files/figure-html/barplots1.2-1.png)<!-- -->
+
 
 
 ```r
@@ -242,36 +313,36 @@ cat(readChar("modelTable1.txt", 1e5))
 ```
 
 ```
-## 
-## ========================================================================
-##                                   Model 1             Model 2           
-## ------------------------------------------------------------------------
-## (Intercept)                               0.6172 ***          0.5915 ***
-##                                          (0.0028)            (0.0026)   
-## poly(incoreL, 4, raw = TRUE)1             0.7429 ***                    
-##                                          (0.0052)                       
-## poly(incoreL, 4, raw = TRUE)2            -0.4607 ***                    
-##                                          (0.0033)                       
-## poly(incoreL, 4, raw = TRUE)3             0.0604 ***                    
-##                                          (0.0008)                       
-## poly(incoreL, 4, raw = TRUE)4            -0.0016 ***                    
-##                                          (0.0001)                       
-## poly(followersL, 4, raw = TRUE)1                              0.6698 ***
-##                                                              (0.0037)   
-## poly(followersL, 4, raw = TRUE)2                             -0.3717 ***
-##                                                              (0.0018)   
-## poly(followersL, 4, raw = TRUE)3                              0.0496 ***
-##                                                              (0.0003)   
-## poly(followersL, 4, raw = TRUE)4                             -0.0020 ***
-##                                                              (0.0000)   
-## ------------------------------------------------------------------------
-## AIC                                20021517.4055       20040393.5115    
-## BIC                                20021590.2807       20040466.3867    
-## Log Likelihood                    -10010753.7027      -10020191.7558    
-## Deviance                           20021507.4055       20040383.5115    
-## Num. obs.                          15792514            15792514         
-## ========================================================================
-## *** p < 0.001, ** p < 0.01, * p < 0.05
+## ## 
+## ## ========================================================================
+## ##                                   Model 1             Model 2           
+## ## ------------------------------------------------------------------------
+## ## (Intercept)                               0.6172 ***          0.5915 ***
+## ##                                          (0.0028)            (0.0026)   
+## ## poly(incoreL, 4, raw = TRUE)1             0.7429 ***                    
+## ##                                          (0.0052)                       
+## ## poly(incoreL, 4, raw = TRUE)2            -0.4607 ***                    
+## ##                                          (0.0033)                       
+## ## poly(incoreL, 4, raw = TRUE)3             0.0604 ***                    
+## ##                                          (0.0008)                       
+## ## poly(incoreL, 4, raw = TRUE)4            -0.0016 ***                    
+## ##                                          (0.0001)                       
+## ## poly(followersL, 4, raw = TRUE)1                              0.6698 ***
+## ##                                                              (0.0037)   
+## ## poly(followersL, 4, raw = TRUE)2                             -0.3717 ***
+## ##                                                              (0.0018)   
+## ## poly(followersL, 4, raw = TRUE)3                              0.0496 ***
+## ##                                                              (0.0003)   
+## ## poly(followersL, 4, raw = TRUE)4                             -0.0020 ***
+## ##                                                              (0.0000)   
+## ## ------------------------------------------------------------------------
+## ## AIC                                20021517.4055       20040393.5115    
+## ## BIC                                20021590.2807       20040466.3867    
+## ## Log Likelihood                    -10010753.7027      -10020191.7558    
+## ## Deviance                           20021507.4055       20040383.5115    
+## ## Num. obs.                          15792514            15792514         
+## ## ========================================================================
+## ## *** p < 0.001, ** p < 0.01, * p < 0.05
 ```
 
 
@@ -290,36 +361,37 @@ cat(readChar("modelTable2.txt", 1e5))
 ```
 
 ```
+## ## 
+## ## ============================================================
+## ##                       Model 1             Model 2           
+## ## ------------------------------------------------------------
+## ## (Intercept)                   0.6073 ***          0.6070 ***
+## ##                              (0.0005)            (0.0005)   
+## ## poly(incoreL, 4)1         -1347.0793 ***                    
+## ##                              (2.0969)                       
+## ## poly(incoreL, 4)2          -186.1654 ***                    
+## ##                              (2.0883)                       
+## ## poly(incoreL, 4)3           666.0353 ***                    
+## ##                              (2.0772)                       
+## ## poly(incoreL, 4)4           -53.0135 ***                    
+## ##                              (2.1024)                       
+## ## poly(followersL, 4)1                          -1352.4721 ***
+## ##                                                  (2.1005)   
+## ## poly(followersL, 4)2                           -265.9020 ***
+## ##                                                  (2.1125)   
+## ## poly(followersL, 4)3                            501.4198 ***
+## ##                                                  (2.2279)   
+## ## poly(followersL, 4)4                           -259.8916 ***
+## ##                                                  (2.4896)   
+## ## ------------------------------------------------------------
+## ## AIC                    20021517.4106       20040393.5114    
+## ## BIC                    20021590.2858       20040466.3867    
+## ## Log Likelihood        -10010753.7053      -10020191.7557    
+## ## Deviance               20021507.4106       20040383.5114    
+## ## Num. obs.              15792514            15792514         
+## ## ============================================================
+## ## *** p < 0.001, ** p < 0.01, * p < 0.05
 ## 
-## ============================================================
-##                       Model 1             Model 2           
-## ------------------------------------------------------------
-## (Intercept)                   0.6073 ***          0.6070 ***
-##                              (0.0005)            (0.0005)   
-## poly(incoreL, 4)1         -1347.0793 ***                    
-##                              (2.0969)                       
-## poly(incoreL, 4)2          -186.1654 ***                    
-##                              (2.0883)                       
-## poly(incoreL, 4)3           666.0353 ***                    
-##                              (2.0772)                       
-## poly(incoreL, 4)4           -53.0135 ***                    
-##                              (2.1024)                       
-## poly(followersL, 4)1                          -1352.4721 ***
-##                                                  (2.1005)   
-## poly(followersL, 4)2                           -265.9020 ***
-##                                                  (2.1125)   
-## poly(followersL, 4)3                            501.4198 ***
-##                                                  (2.2279)   
-## poly(followersL, 4)4                           -259.8916 ***
-##                                                  (2.4896)   
-## ------------------------------------------------------------
-## AIC                    20021517.4106       20040393.5114    
-## BIC                    20021590.2858       20040466.3867    
-## Log Likelihood        -10010753.7053      -10020191.7557    
-## Deviance               20021507.4106       20040383.5114    
-## Num. obs.              15792514            15792514         
-## ============================================================
-## *** p < 0.001, ** p < 0.01, * p < 0.05
 ```
 
 
@@ -362,14 +434,14 @@ cat(readChar("rocTest.txt", 1e5))
 ```
 
 ```
-##  DeLong's test for two correlated ROC curves
-## 
-## data:  rcI and rcF
-## Z = 20.958, p-value < 2.2e-16
-## alternative hypothesis: true difference in AUC is not equal to 0
-## sample estimates:
-## AUC of roc1 AUC of roc2 
-##   0.5931735   0.5905627
+## ##  DeLong's test for two correlated ROC curves
+## ## 
+## ## data:  rcI and rcF
+## ## Z = 20.958, p-value < 2.2e-16
+## ## alternative hypothesis: true difference in AUC is not equal to 0
+## ## sample estimates:
+## ## AUC of roc1 AUC of roc2 
+## ##   0.5931735   0.5905627
 ```
 
 

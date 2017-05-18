@@ -9,16 +9,18 @@ output:
 
 ---
   
-```{r setup, eval=TRUE, echo=TRUE, cache=TRUE, message=FALSE, results='hide'}
-
-download.file("https://www.sg.ethz.ch/media/medialibrary/2016/09/01_IPP_Inactivity.zip", destfile="01_IPP_Inactivity.zip")
+```{r download, eval=FALSE, echo=TRUE, cache=TRUE, message=FALSE, results='hide'}
+download.file("https://www.sg.ethz.ch/media/medialibrary/2017/05/01_IPP_Inactivity.zip", destfile="01_IPP_Inactivity.zip")
 unzip("01_IPP_Inactivity.zip", exdir = "./") 
 file.remove("01_IPP_Inactivity.zip")
+```
 
+```{r setup, eval=TRUE, echo=TRUE, cache=TRUE, message=FALSE, results='hide'}
 data <- read.table("InactiveDataTrain.dat", header=T, sep="\t", 
-                    colClasses=c(rep("integer", 1), "character", rep("integer", 2)))
+                    colClasses=c(rep("integer", 4), "character", rep("integer", 3)))
 
 data$included <- data$lastts > 1248998400
+data$active <- data$lastts > 1459468800
 data$inactive <- data$lastts < 1459468800 #April 1st, 2016 (<3 months active) 
 ```
 
@@ -105,7 +107,7 @@ lines(inactIncoreDF$i[f], inactIncoreDF$pinmn[f], col="red")
 
 load("followersP-2.RData")
 f <- inactIncoreDF$i>0 & !is.na(inactIncoreDF$pinmn)
-lines(inactIncoreDF$i[f], inactIncoreDF$pinmn[f], log="x", type="l", ylim=ylim, xlim=xlim, col="blue", cex.axis=1.5, cex.lab=1.5)
+lines(inactIncoreDF$i[f], inactIncoreDF$pinmn[f], type="l", ylim=ylim, xlim=xlim, col="blue", cex.axis=1.5, cex.lab=1.5)
 polygon(c(inactIncoreDF$i[f],rev(inactIncoreDF$i[f])), c(inactIncoreDF$pinlow[f], rev(inactIncoreDF$pinhigh[f])), col=rgb(0,0,1,0.25), border="blue")
 lines(inactIncoreDF$i[f], inactIncoreDF$pinmn[f], col="blue")
 legend("bottomleft", c("Reputation", "Popularity"), col=c("red", "blue"), lwd=c(2,2), box.lwd=-1, cex=1.25)
@@ -115,17 +117,34 @@ eaxis(1,cex.axis=1.5)
 eaxis(2,cex.axis=1.5)
 ```
 
-```{r barplots1.2, dependson="sizes", echo=TRUE, eval=TRUE, fig.width=4.25, fig.height=4, cache=TRUE}
+```{r barplots1.2, dependson="sizes", echo=FALSE, eval=TRUE, fig.width=4.25, fig.height=4, cache=TRUE}
 par(mar=c(4,5,0.5,0.75))
 
-inCont <- data$included & data$group=="I"
-outCont <- data$included & data$group=="O"
-tendrils <- data$included & data$group=="T"
-scc <- data$included & data$group=="S"
+inCont <- data$included & data$continent=="I"
+outCont <- data$included & data$continent=="O"
+tendrils <- data$included & data$continent=="T"
+scc <- data$included & data$continent=="S"
 
+ffoll <- data$followers>0
+ffrie <- data$followings>0
+
+print(paste("IN that have no followers:", sum(inCont&data$followers==0)/sum(inCont))) 
+print(paste("OUT that do not follow:", sum(outCont&data$followings==0)/sum(outCont))) 
+print(paste("REST that have no followers:", sum(tendrils&data$followers==0)/sum(tendrils))) 
+print(paste("REST that do not follow:", sum(tendrils&data$followings==0)/sum(tendrils))) 
+
+print("IN vs SCC")
 prop.test(x=c(sum(data$inactive[inCont]), sum(data$inactive[scc])), n=c(sum(inCont), sum(scc)))
+prop.test(x=c(sum(data$inactive[inCont&ffoll]), sum(data$inactive[scc])), n=c(sum(inCont&ffoll), sum(scc)))
+
+print("OUT vs SCC")
 prop.test(x=c(sum(data$inactive[outCont]), sum(data$inactive[scc])), n=c(sum(outCont), sum(scc)))
+prop.test(x=c(sum(data$inactive[outCont&ffrie]), sum(data$inactive[scc])), n=c(sum(outCont&ffrie), sum(scc)))
+
+print("REST vs SCC")
 prop.test(x=c(sum(data$inactive[tendrils]), sum(data$inactive[scc])), n=c(sum(tendrils), sum(scc)))
+prop.test(x=c(sum(data$inactive[tendrils&ffoll]), sum(data$inactive[scc])), n=c(sum(tendrils&ffoll), sum(scc)))
+prop.test(x=c(sum(data$inactive[tendrils&ffrie]), sum(data$inactive[scc])), n=c(sum(tendrils&ffrie), sum(scc)))
 
 bootstrapRatio <- function(x, R=100, L=length(x))
 {
@@ -138,21 +157,35 @@ bootstrapRatio <- function(x, R=100, L=length(x))
   return(sort(ps))
 }
 
-nrep<-1000
+nrep<-100
 inPs <- bootstrapRatio(data$inactive[inCont], R=nrep)
+in2Ps <- bootstrapRatio(data$inactive[inCont&ffoll], R=nrep)
 outPs <- bootstrapRatio(data$inactive[outCont], R=nrep)
+out2Ps <- bootstrapRatio(data$inactive[outCont&ffrie], R=nrep)
 tenPs <- bootstrapRatio(data$inactive[tendrils], R=nrep)
+ten2Ps <- bootstrapRatio(data$inactive[tendrils&ffoll], R=nrep)
+ten3Ps <- bootstrapRatio(data$inactive[tendrils&ffrie], R=nrep)
 sccPs <- bootstrapRatio(data$inactive[scc], R=nrep)
 
-mns <- c(mean(sccPs), mean(outPs), mean(inPs), mean(tenPs))
-los <- c(sccPs[round(nrep*0.025)], mean(outPs[round(nrep*0.025)]), mean(inPs[round(nrep*0.025)]), mean(tenPs[round(nrep*0.025)]))
-his <- c(mean(sccPs[round(nrep*0.975)]), mean(outPs[round(nrep*0.975)]), mean(inPs[round(nrep*0.975)]), mean(tenPs[round(nrep*0.975)]))
+mns <- c(mean(sccPs), mean(outPs), mean(out2Ps), mean(inPs), mean(in2Ps), mean(tenPs), mean(ten2Ps),mean(ten3Ps))
+#print(mns)
+los <- c(sccPs[round(nrep*0.025)], mean(outPs[round(nrep*0.025)]), mean(out2Ps[round(nrep*0.025)]),
+         mean(inPs[round(nrep*0.025)]),  mean(in2Ps[round(nrep*0.025)]),
+         mean(tenPs[round(nrep*0.025)]), mean(ten2Ps[round(nrep*0.025)]), mean(ten3Ps[round(nrep*0.025)]) )
+#print(los)
+his <- c(sccPs[round(nrep*0.975)], mean(outPs[round(nrep*0.975)]), mean(out2Ps[round(nrep*0.975)]),
+         mean(inPs[round(nrep*0.975)]),  mean(in2Ps[round(nrep*0.975)]),
+         mean(tenPs[round(nrep*0.975)]), mean(ten2Ps[round(nrep*0.975)]), mean(ten3Ps[round(nrep*0.975)]) )
 
 library(Hmisc)
-errbar(seq(1,4), mns, los, his, lwd=2, pch=19, cex=1, xlab="SCC Group", ylab="Ratio of Inactive Users", axes=F, ylim=c(0.62,0.72), cex.lab=1.5)
+colors = c("black", "black", "blue", "black", "red", "black", "blue", "red")
+errbar(c(1,2,2.25,3,3.25,4,4.25,4.5), mns, los, his, lwd=2, pch=19, cex=1, xlab="SCC Group", ylab="Ratio of Inactive Users", axes=F, ylim=c(0.62,0.72), cex.lab=1.5, col=colors, errbar.col=colors)
 eaxis(1, at=c(1,2,3,4), labels=c("SCC", "Out", "In", "Rest"), cex.axis=1.5)
 eaxis(2, cex.axis=1.15)
+legend("bottomright", c("all","in-degree>0", "out-degree>0"), col=c("black","blue", "red"), lwd=c(1,1,1), pch=c(19,19,19), box.lwd=-1)
+
 ```
+
 
 ```{r, echo=TRUE, eval=FALSE, results='asis', cache=TRUE}
 library(arm)

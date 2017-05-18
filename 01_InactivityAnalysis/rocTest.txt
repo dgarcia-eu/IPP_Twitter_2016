@@ -1,0 +1,8 @@
+##  DeLong's test for two correlated ROC curves
+## 
+## data:  rcI and rcF
+## Z = 20.958, p-value < 2.2e-16
+## alternative hypothesis: true difference in AUC is not equal to 0
+## sample estimates:
+## AUC of roc1 AUC of roc2 
+##   0.5931735   0.5905627 
