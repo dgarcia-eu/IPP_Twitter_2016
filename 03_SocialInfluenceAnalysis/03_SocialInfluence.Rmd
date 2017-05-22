@@ -1,90 +1,90 @@
 ---
 title: "Social Impact in Twitter"
 author: "David Garcia"
-date: "18.08.2016"
+date: "22.05.2017"
 output: 
     html_document:
       keep_md: yes 
       fig_caption: yes
 ---
 
-```{r setup, eval=TRUE, echo=TRUE, cache=TRUE, message=FALSE, results='hide'}
-download.file("https://www.sg.ethz.ch/media/medialibrary/2016/09/03_IPP_SocialInfluence.zip", destfile="03_Social_Influence.zip")
+```{r setup, eval=FALSE, echo=TRUE, cache=TRUE, message=FALSE, results='hide'}
+download.file("https://www.sg.ethz.ch/media/medialibrary/2017/05/03_IPP_SocialInfluence.zip", destfile="03_Social_Influence.zip")
 unzip("03_Social_Influence.zip", exdir = "./") 
 file.remove("03_Social_Influence.zip")
 ```
 
 
-```{r, echo=TRUE, cache=TRUE, eval=TRUE, message=FALSE}
+```{r, echo=TRUE, cache=TRUE, results='asis'}
 library(arm)
 library(texreg)
-
-d <- read.table("SIdata.dat", header=T, sep="\t")
-f <- d$avgRT > 0
-d <- data.frame(meanscore=d$meanscore[f], score=d$score[f], avgRT=d$avgRT[f], followers=d$followers[f], incore=d$incore[f])
-
-mRT <- bayesglm(log(avgRT) ~ log(incore+1) * log(followers+1), data=d) 
-mSC <- bayesglm(log(score) ~ log(incore+1) * log(followers+1), data=d) 
-mMN <- bayesglm(log(meanscore) ~ log(incore+1) * log(followers+1), data=d) 
-
-screenreg(list(mRT,mSC,mMN), digits=4)
-```
-
-```{r, echo=TRUE, cache=TRUE, eval=TRUE, message=FALSE}
 library(lmtest)
 
-m1 <- bayesglm(log(avgRT) ~ log(followers+1), data=d)                                       
-m2 <- bayesglm(log(avgRT) ~ log(incore+1), data=d)     
-lrtest(m1,m2)
+d <- read.table("RTdata-train.dat", header=T, sep="\t")
 
-m1 <- bayesglm(log(meanscore) ~ log(followers+1), data=d)                                       
-m2 <- bayesglm(log(meanscore) ~ log(incore+1), data=d)     
-lrtest(m1,m2)
+ds <- data.frame(logRT=log(d$avgRT), logFollowers = log(d$followers+1), logIncore = log(d$incore+1), c=relevel(as.factor(d$continent), ref="T"))
+
+m1 <- bayesglm(logRT ~ logFollowers, data=ds)                                       
+m2 <- bayesglm(logRT ~ logIncore, data=ds)     
+m3 <- bayesglm(logRT ~ logIncore*logFollowers, data=ds) 
+
+screenreg(list(m1,m2,m3), digits=4)
 ```
 
 
-```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=6, fig.height=2.5, message=FALSE}
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=6, fig.height=5}
+lrtest(m1,m2)
+
 par(mar=c(4,4,0,0))
-par(mfrow=c(1,3))
-hist(log(d$avgRT), main="", xlab="log mean RT")
-hist(d$score, main="", xlab="Klout score")
-hist(d$meanscore, main="", xlab="Mean influenced klout score")
+hist(ds$logRT, main="", xlab="log mean RT",breaks=70)
 ```
 
 
-```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=8, fig.height=3}
-par(mar=c(4,5,1.5,0.5))
-par(mfrow=c(1,3))
-
-hist(residuals(mRT), main="", xlab="Residual RT Model", cex.axis=2,cex.lab=2)
-hist(residuals(mSC), main="", xlab="Residual KS Model", cex.axis=2,cex.lab=2)
-hist(residuals(mMN), main="", xlab="Residual IK Model", cex.axis=2,cex.lab=2)
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=6, fig.height=5}
+par(mar=c(4,6,0,0))
+mRT <- m3
+hist(residuals(mRT), main="", xlab="Residuals of RT Model", ylab="density", cex.axis=2, cex.lab=2)
+shapiro.test(sample(residuals(mRT),5000))
 ```
 
 
-```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=6, fig.height=4, message=FALSE}
+
+
+
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=6, fig.height=4}
 par(mar=c(4,5,1.5,0.5))
 
-incorevals <- c(40,50,78,100,200)
-follvals <- exp(seq(0, log(max(d$followers)), by=0.01))
+incorevals <- log(c(1,10,50,200,2000)+1)
+follvals <- seq(0, log(max(d$followers)), by=0.01)
 
-Pdata <- data.frame(followers=rep(follvals, length(incorevals)), incore=rep(incorevals, each=length(follvals)))
-RTpred <- predict(mRT, newdata=Pdata)
-Pdata$fit <- exp(RTpred)
+RTpred <- predict(mRT, data.frame(logFollowers=follvals, logIncore=rep(incorevals[1], length(follvals))), se.fit=TRUE)
+plot(exp(follvals), exp(RTpred$fit), type="l", lwd=2, xlab="Popularity in 2009", ylab="Social influence (mean retweets)", xaxt="n", yaxt="n", cex.lab=1.25, ylim=c(0,400))
+polygon(c(exp(follvals), rev(exp(follvals))), c(exp(RTpred$fit+RTpred$se.fit), rev(exp(RTpred$fit-RTpred$se.fit))), col=rgb(0,0,0,0.25), border="black", lty=2)
 
-plot(follvals, Pdata$fit[Pdata$incore==incorevals[1]], type="l", lwd=2, xlab="Popularity in 2009", ylab="Social influence (mean retweets)", xaxt="n", yaxt="n", cex.lab=1.25)
-lines(follvals, Pdata$fit[Pdata$incore==incorevals[2]], col="red", lwd=2)
-lines(follvals, Pdata$fit[Pdata$incore==incorevals[3]], col="blue", lwd=2)
-lines(follvals, Pdata$fit[Pdata$incore==incorevals[4]], col="darkorange", lwd=2)
-lines(follvals, Pdata$fit[Pdata$incore==incorevals[5]], col="purple", lwd=2)
+RTpred <- predict(mRT, data.frame(logFollowers=follvals, logIncore=rep(incorevals[2], length(follvals))), se.fit=TRUE)
+lines(exp(follvals), exp(RTpred$fit), col="red", lwd=2)
+polygon(c(exp(follvals), rev(exp(follvals))), c(exp(RTpred$fit+RTpred$se.fit), rev(exp(RTpred$fit-RTpred$se.fit))), col=rgb(1,0,0,0.25), border="red", lty=2)
+
+RTpred <- predict(mRT, data.frame(logFollowers=follvals, logIncore=rep(incorevals[3], length(follvals))), se.fit=TRUE)
+lines(exp(follvals), exp(RTpred$fit), col="blue", lwd=2)
+polygon(c(exp(follvals), rev(exp(follvals))), c(exp(RTpred$fit+RTpred$se.fit), rev(exp(RTpred$fit-RTpred$se.fit))), col=rgb(0,0,1,0.25), border="blue", lty=2)
+
+RTpred <- predict(mRT, data.frame(logFollowers=follvals, logIncore=rep(incorevals[4], length(follvals))), se.fit=TRUE)
+lines(exp(follvals), exp(RTpred$fit), col="darkorange", lwd=2)
+polygon(c(exp(follvals), rev(exp(follvals))), c(exp(RTpred$fit+RTpred$se.fit), rev(exp(RTpred$fit-RTpred$se.fit))), col=rgb(1,1,0,0.25), border="darkorange", lty=2)
+
+RTpred <- predict(mRT, data.frame(logFollowers=follvals, logIncore=rep(incorevals[5], length(follvals))), se.fit=TRUE)
+lines(exp(follvals), exp(RTpred$fit), col="purple", lwd=2)
+polygon(c(exp(follvals), rev(exp(follvals))), c(exp(RTpred$fit+RTpred$se.fit), rev(exp(RTpred$fit-RTpred$se.fit))), col=rgb(1,0,1,0.25), border="purple", lty=2)
 
 library(sfsmisc)
 eaxis(1,cex.axis=1.25)
 eaxis(2,cex.axis=1.25)
-legend("topleft", c("I=40", "I=50", "I=78", "I=100", "I=200"), col=c("black","red","blue","darkorange","purple"), lwd=rep(2,5), box.lwd=-1)
+
+legend("topleft", c(expression(I["09"]==1), expression(I["09"]==10), expression(I["09"]==50), expression(I["09"]==200), expression(I["09"]==2000)), col=c("black","red","blue","darkorange","purple"), lwd=rep(2,5), box.lwd=-1)
 ```
 
-```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=4, fig.height=4, message=FALSE}
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=6, fig.height=5}
 par(mar=c(4,5,1.5,0))
 library(lattice)
 
@@ -95,27 +95,79 @@ newdata <- data.frame(incore=rep(incorevals, length(follvals)),
                   followers=rep(follvals, each=length(incorevals)))
 newdata$I09 <- log(newdata$incore+1)
 newdata$F09 <- log(newdata$followers+1)
+newdata$logIncore <- log(newdata$incore+1)
+newdata$logFollowers <- log(newdata$followers+1)
 newdata$RT <- predict(mRT, newdata=newdata)
-newdata$KS <- predict(mSC, newdata=newdata)
-newdata$IK <- predict(mMN, newdata=newdata)
 
 cscale <- rev(terrain.colors(24*100))
-wireframe(RT~I09*F09, newdata,drape = TRUE, colorkey = TRUE,           col.regions=cscale,cex.axis=1, cex.lab=1, scales=list(arrows=FALSE), par.box=list(lty=2))
+wireframe(RT~I09*F09, newdata,drape = TRUE, colorkey = TRUE, col.regions=cscale,cex.axis=1, cex.lab=1, scales=list(arrows=FALSE), par.box=list(lty=2))
 ```
 
-```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=4, fig.height=4, message=FALSE, warning=FALSE}
-par(mar=c(4,5,1.5,0))
 
-cscale <- rev(topo.colors(24*100))
-clims <-round(range(newdata$mSCpred))*100
-wireframe(KS~I09*F09, newdata,drape = TRUE, colorkey = TRUE, col.regions=cscale,cex.axis=1, cex.lab=1, scales=list(arrows=FALSE), par.box=list(lty=2))
+```{r, echo=TRUE, cache=TRUE}
+
+dtest <- read.table("RTdata-test.dat", header=T, sep="\t")
+dstest <- data.frame(logRT=log(dtest$avgRT), logFollowers = log(dtest$followers+1), logIncore = log(dtest$incore+1))
+
+m0 <- bayesglm(logRT ~ 1, data=ds)                                       
+
+m0OutAE <- abs(predict(m0, dstest)-dstest$logRT)
+m1OutAE <- abs(predict(m1, dstest)-dstest$logRT)
+m2OutAE <- abs(predict(m2, dstest)-dstest$logRT)
+m3OutAE <- abs(predict(m3, dstest)-dstest$logRT)
+
+print("MODEL 0")
+mean(m0OutAE)
+
+print("MODEL 1")
+mean(m1OutAE)
+
+print("MODEL 2")
+mean(m2OutAE)
+
+print("MODEL 1 vs 2")
+t.test(m1OutAE, m2OutAE, paired=TRUE)
+
+print("MODEL 3")
+mean(m3OutAE)
+
+print("MODEL 0 vs 3")
+t.test(m0OutAE, m3OutAE, paired=TRUE)
+
+print("MODEL 1 vs 3")
+t.test(m1OutAE, m3OutAE, paired=TRUE)
+
+print("MODEL 2 vs 3")
+t.test(m2OutAE, m3OutAE, paired=TRUE)
+
 ```
 
-```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=4, fig.height=4, warning=FALSE}
-par(mar=c(4,5,1.5,0))
 
-cscale <- rev(heat.colors(24*100))
-clims <-round(range(newdata$mMNpred))*100
-wireframe(IK~I09*F09, newdata,drape = TRUE, colorkey = TRUE,           col.regions=cscale,cex.axis=1, cex.lab=1, scales=list(arrows=FALSE), par.box=list(lty=2))
+
+```{r, echo=TRUE, cache=TRUE, results='asis', fig.width=5, fig.height=4.5}
+d <- read.table("RTdata-train.dat", header=T, sep="\t")
+
+ds <- data.frame(logRT=log(d$avgRT), logFollowers = log(d$followers+1), logIncore = log(d$incore+1), c=relevel(as.factor(d$continent), ref="T"))
+
+mc <- bayesglm(logRT ~ c, data=ds)
+screenreg(mc, digits=4)
+preds <- predict(mc, data.frame(c=unique(ds$c)), se.fit=TRUE)
+
+library(Hmisc)
+errbar(seq(1,4), exp(preds$fit), exp(preds$fit-preds$se.fit), exp(preds$fit +preds$se.fit), lwd=2, pch=19, cex=1, xlab="SCC Group", ylab="Average Amount of Retweets", axes=F, cex.lab=1.5)
+library(sfsmisc)
+eaxis(1, at=c(1,2,3,4), labels=c("SCC", "Out", "In", "Rest"), cex.axis=1.5)
+eaxis(2, cex.axis=1.15)
 
 ```
+
+
+```{r, echo=TRUE, cache=TRUE, eval=TRUE, fig.width=6, fig.height=5}
+par(mar=c(4,6,0,0))
+mRT <- mc
+hist(residuals(mRT), main="", xlab="Residuals of Bow-tie Model", ylab="density", cex.axis=2,cex.lab=2)
+shapiro.test(sample(residuals(mRT),5000))
+```
+
+
+
