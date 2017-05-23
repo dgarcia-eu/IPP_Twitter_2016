@@ -24,29 +24,101 @@ m1 <- bayesglm(logRT ~ logFollowers, data=ds)
 m2 <- bayesglm(logRT ~ logIncore, data=ds)     
 m3 <- bayesglm(logRT ~ logIncore*logFollowers, data=ds) 
 
-screenreg(list(m1,m2,m3), digits=4)
+htmlreg(list(m1,m2,m3), digits=4)
 ```
 
 
-===============================================================================
-                        Model 1            Model 2            Model 3          
--------------------------------------------------------------------------------
-(Intercept)                   -2.6420 ***        -2.5921 ***        -2.1160 ***
-                              (0.0019)           (0.0020)           (0.0033)   
-logFollowers                   0.1532 ***                            0.5430 ***
-                              (0.0006)                              (0.0033)   
-logIncore                                         0.1563 ***        -0.8395 ***
-                                                 (0.0007)           (0.0039)   
-logIncore:logFollowers                                               0.0515 ***
-                                                                    (0.0003)   
--------------------------------------------------------------------------------
-AIC                     12384948.3227      12402879.1673      12324353.9407    
-BIC                     12384987.3510      12402918.1956      12324418.9880    
-Log Likelihood          -6192471.1613      -6201436.5836      -6162171.9704    
-Deviance                 8240167.6257       8285062.5597       8090235.0982    
-Num. obs.                3300045            3300045            3300045         
-===============================================================================
-*** p < 0.001, ** p < 0.01, * p < 0.05
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<table cellspacing="0" align="center" style="border: none;">
+<caption align="bottom" style="margin-top:0.3em;">Statistical models</caption>
+<tr>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"><b></b></th>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"><b>Model 1</b></th>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"><b>Model 2</b></th>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"><b>Model 3</b></th>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">(Intercept)</td>
+<td style="padding-right: 12px; border: none;">-2.6420<sup style="vertical-align: 0px;">***</sup></td>
+<td style="padding-right: 12px; border: none;">-2.5921<sup style="vertical-align: 0px;">***</sup></td>
+<td style="padding-right: 12px; border: none;">-2.1160<sup style="vertical-align: 0px;">***</sup></td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">(0.0019)</td>
+<td style="padding-right: 12px; border: none;">(0.0020)</td>
+<td style="padding-right: 12px; border: none;">(0.0033)</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">logFollowers</td>
+<td style="padding-right: 12px; border: none;">0.1532<sup style="vertical-align: 0px;">***</sup></td>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">0.5430<sup style="vertical-align: 0px;">***</sup></td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">(0.0006)</td>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">(0.0033)</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">logIncore</td>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">0.1563<sup style="vertical-align: 0px;">***</sup></td>
+<td style="padding-right: 12px; border: none;">-0.8395<sup style="vertical-align: 0px;">***</sup></td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">(0.0007)</td>
+<td style="padding-right: 12px; border: none;">(0.0039)</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">logIncore:logFollowers</td>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">0.0515<sup style="vertical-align: 0px;">***</sup></td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">(0.0003)</td>
+</tr>
+<tr>
+<td style="border-top: 1px solid black;">AIC</td>
+<td style="border-top: 1px solid black;">12384948.3227</td>
+<td style="border-top: 1px solid black;">12402879.1673</td>
+<td style="border-top: 1px solid black;">12324353.9407</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">BIC</td>
+<td style="padding-right: 12px; border: none;">12384987.3510</td>
+<td style="padding-right: 12px; border: none;">12402918.1956</td>
+<td style="padding-right: 12px; border: none;">12324418.9880</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">Log Likelihood</td>
+<td style="padding-right: 12px; border: none;">-6192471.1613</td>
+<td style="padding-right: 12px; border: none;">-6201436.5836</td>
+<td style="padding-right: 12px; border: none;">-6162171.9704</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">Deviance</td>
+<td style="padding-right: 12px; border: none;">8240167.6257</td>
+<td style="padding-right: 12px; border: none;">8285062.5597</td>
+<td style="padding-right: 12px; border: none;">8090235.0982</td>
+</tr>
+<tr>
+<td style="border-bottom: 2px solid black;">Num. obs.</td>
+<td style="border-bottom: 2px solid black;">3300045</td>
+<td style="border-bottom: 2px solid black;">3300045</td>
+<td style="border-bottom: 2px solid black;">3300045</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;" colspan="5"><span style="font-size:0.8em"><sup style="vertical-align: 0px;">***</sup>p &lt; 0.001, <sup style="vertical-align: 0px;">**</sup>p &lt; 0.01, <sup style="vertical-align: 0px;">*</sup>p &lt; 0.05</span></td>
+</tr>
+</table>
 
 
 
@@ -346,29 +418,73 @@ d <- read.table("RTdata-train.dat", header=T, sep="\t")
 ds <- data.frame(logRT=log(d$avgRT), logFollowers = log(d$followers+1), logIncore = log(d$incore+1), c=relevel(as.factor(d$continent), ref="T"))
 
 mc <- bayesglm(logRT ~ c, data=ds)
-screenreg(mc, digits=4)
+htmlreg(mc, digits=4)
 ```
 
 
-=================================
-                Model 1          
----------------------------------
-(Intercept)           -2.2973 ***
-                      (0.0083)   
-cI                     0.0465 ***
-                      (0.0112)   
-cO                     0.2457 ***
-                      (0.0089)   
-cS                     0.1030 ***
-                      (0.0083)   
----------------------------------
-AIC             12452259.0429    
-BIC             12452324.0902    
-Log Likelihood  -6226124.5215    
-Deviance         8409957.1963    
-Num. obs.        3300045         
-=================================
-*** p < 0.001, ** p < 0.01, * p < 0.05
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<table cellspacing="0" align="center" style="border: none;">
+<caption align="bottom" style="margin-top:0.3em;">Statistical models</caption>
+<tr>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"><b></b></th>
+<th style="text-align: left; border-top: 2px solid black; border-bottom: 1px solid black; padding-right: 12px;"><b>Model 1</b></th>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">(Intercept)</td>
+<td style="padding-right: 12px; border: none;">-2.2973<sup style="vertical-align: 0px;">***</sup></td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">(0.0083)</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">cI</td>
+<td style="padding-right: 12px; border: none;">0.0465<sup style="vertical-align: 0px;">***</sup></td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">(0.0112)</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">cO</td>
+<td style="padding-right: 12px; border: none;">0.2457<sup style="vertical-align: 0px;">***</sup></td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">(0.0089)</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">cS</td>
+<td style="padding-right: 12px; border: none;">0.1030<sup style="vertical-align: 0px;">***</sup></td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;"></td>
+<td style="padding-right: 12px; border: none;">(0.0083)</td>
+</tr>
+<tr>
+<td style="border-top: 1px solid black;">AIC</td>
+<td style="border-top: 1px solid black;">12452259.0429</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">BIC</td>
+<td style="padding-right: 12px; border: none;">12452324.0902</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">Log Likelihood</td>
+<td style="padding-right: 12px; border: none;">-6226124.5215</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;">Deviance</td>
+<td style="padding-right: 12px; border: none;">8409957.1963</td>
+</tr>
+<tr>
+<td style="border-bottom: 2px solid black;">Num. obs.</td>
+<td style="border-bottom: 2px solid black;">3300045</td>
+</tr>
+<tr>
+<td style="padding-right: 12px; border: none;" colspan="3"><span style="font-size:0.8em"><sup style="vertical-align: 0px;">***</sup>p &lt; 0.001, <sup style="vertical-align: 0px;">**</sup>p &lt; 0.01, <sup style="vertical-align: 0px;">*</sup>p &lt; 0.05</span></td>
+</tr>
+</table>
 
 ```r
 preds <- predict(mc, data.frame(c=unique(ds$c)), se.fit=TRUE)

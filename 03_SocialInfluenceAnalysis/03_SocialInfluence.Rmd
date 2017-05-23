@@ -28,7 +28,7 @@ m1 <- bayesglm(logRT ~ logFollowers, data=ds)
 m2 <- bayesglm(logRT ~ logIncore, data=ds)     
 m3 <- bayesglm(logRT ~ logIncore*logFollowers, data=ds) 
 
-screenreg(list(m1,m2,m3), digits=4)
+htmlreg(list(m1,m2,m3), digits=4)
 ```
 
 
@@ -150,7 +150,7 @@ d <- read.table("RTdata-train.dat", header=T, sep="\t")
 ds <- data.frame(logRT=log(d$avgRT), logFollowers = log(d$followers+1), logIncore = log(d$incore+1), c=relevel(as.factor(d$continent), ref="T"))
 
 mc <- bayesglm(logRT ~ c, data=ds)
-screenreg(mc, digits=4)
+htmlreg(mc, digits=4)
 preds <- predict(mc, data.frame(c=unique(ds$c)), se.fit=TRUE)
 
 library(Hmisc)
@@ -158,7 +158,6 @@ errbar(seq(1,4), exp(preds$fit), exp(preds$fit-preds$se.fit), exp(preds$fit +pre
 library(sfsmisc)
 eaxis(1, at=c(1,2,3,4), labels=c("SCC", "Out", "In", "Rest"), cex.axis=1.5)
 eaxis(2, cex.axis=1.15)
-
 ```
 
 
